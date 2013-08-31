@@ -6,6 +6,9 @@ Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
         - updated Makefile.PL.
         - added META.json and updated META.yml.
         - extended test suite.
+        - fixed calls to API v1.
+        - extended results stored in book hash from API data.
+        - prepared for API v2.
 
 0.07    2009-03-12
         - added missing XML::LibXML requirement in Makefile.PL

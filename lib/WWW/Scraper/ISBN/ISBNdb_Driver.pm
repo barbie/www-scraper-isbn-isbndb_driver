@@ -25,6 +25,21 @@ use Carp;
 our $ACCESS_KEY = undef;
 our $user_agent = new LWP::UserAgent();
 
+my $API_VERSION = 'v1';
+my $LB2G  = 0.00220462;     # number of pounds (lbs) in a gram
+
+my %editions = (
+    '(pbk.)'            => 'Paperback',
+    '(electronic bk.)'  => 'eBook'
+);
+
+# in preparation for moving to API v2
+my %api_paths = (
+    'v1'    => { format => 'http://isbndb.com/api/%s.xml?access_key=%s&index1=%s&results=%s&value1=%s', fields => [ qw( search_type access_key search_field results_type search_param ) ] },
+);
+
+#--------------------------------------------------------------------------
+
 =head1 NAME
 
 WWW::Scraper::ISBN::ISBNdb_Driver - Search driver for the isbndb.com online book catalog
@@ -41,11 +56,11 @@ WWW::Scraper::ISBN::ISBNdb_Driver - Search driver for the isbndb.com online book
 
   if( $result->found ) {
     my $book = $result->book;
-    print "ISBN: ", $book->{isbn}, "\n";
-    print "Title: ", $book->{title}, "\n";
-    print "Author: ", $book->{author}, "\n";
+    print "ISBN: ",      $book->{isbn},      "\n";
+    print "Title: ",     $book->{title},     "\n";
+    print "Author: ",    $book->{author},    "\n";
     print "Publisher: ", $book->{publisher}, "\n";
-    print "Year: ", $book->{year}, "\n";
+    print "Year: ",      $book->{year},      "\n";
   }
 
 =head1 DESCRIPTION
@@ -69,19 +84,18 @@ sub search {
     my( $details, $details_url ) = $self->_fetch( 'books', 'isbn' => $isbn, 'details' );
     my( $authors, $authors_url ) = $self->_fetch( 'books', 'isbn' => $isbn, 'authors' );
 
-    return undef unless $details && $self->_contains_book_data($details);
-
-    my $pubdata = $self->_get_pubdata($details);
+    return  unless $details && $self->_contains_book_data($details);
 
     my %book = (
-        isbn        => $isbn,
-        title       => $self->_get_title($details),
-        author      => $self->_get_author($details, $authors),
-        publisher   => $pubdata->{publisher},
-        location    => $pubdata->{location},
-        year        => $pubdata->{year},
-        _source_url => $details_url,
+        book_link   => $details_url,
+
+        # deprecated
+        _source_url => $details_url
     );
+
+    $self->_get_pubdata(\%book,$details);
+    $self->_get_details(\%book,$details);
+    $self->_get_authors(\%book,$authors);
 
     $self->book(\%book);
     $self->found(1);
@@ -96,62 +110,118 @@ sub _contains_book_data {
     return $doc->getElementsByTagName('BookData')->size > 0;
 }
 
-sub _get_title {
-    my( $self, $doc ) = @_;
-    my $long_title  = eval { ($doc->findnodes('//TitleLong'))[0]->to_literal };
-    my $short_title = eval { ($doc->findnodes('//Title'))[0]->to_literal };
-    return $long_title || $short_title;
-}
+#<ISBNdb server_time="2013-08-31T08:52:38Z">
+#<BookList total_results="1" page_size="10" page_number="1" shown_results="1">
+#<BookData book_id="learning_perl_a03" isbn="0596101058" isbn13="9780596101053">
+#<Title>Learning Perl</Title>
+#<TitleLong></TitleLong>
+#<AuthorsText>Randal L. Schwartz, Tom Phoenix and brian d foy</AuthorsText>
+#<PublisherText publisher_id="oreilly">Sebastopol, CA : O\'Reilly, c2005.</PublisherText>
+#<Authors>
+#<Person person_id="schwartz_randal_l">Schwartz, Randal L.</Person>
+#<Person person_id="tom_phoenix">Tom Phoenix</Person>
+#<Person person_id="brian_d_foy">brian d foy</Person>
+#</Authors>
+#</BookData>
+#</BookList>
+#</ISBNdb>
 
-sub _get_author {
-    my( $self, $details_doc, $authors_doc ) = @_;
-
-    my $authors = $self->_get_all_authors($authors_doc);
-    my $str = join '; ', @$authors;
-
-    $str =~ s/^\s+//;
-    $str =~ s/\s+$//;
-    return $str;
-}
-
-sub _get_all_authors {
-    my( $self, $authors ) = @_;
+sub _get_authors {
+    my( $self, $book, $authors ) = @_;
     my $people = $authors->findnodes('//Authors/Person');
     my @people;
     for( my $i = 0; $i < $people->size; $i++ ) {
         my $person = $people->get_node($i);
         push @people, $person->to_literal;
     }
-    return \@people;
+
+    my $str = join '; ', @people;
+    $str =~ s/^\s+//;
+    $str =~ s/\s+$//;
+
+    $book->{author} = $str;
 }
 
 sub _get_pubdata {
-    my( $self, $doc ) = @_;
+    my( $self, $book, $doc ) = @_;
 
     my $pubtext = $doc->findnodes('//PublisherText')->to_literal;
-    my $details_ei = $doc->findnodes('//Details/@edition_info')->to_literal;
+    my $details = $doc->findnodes('//Details/@edition_info')->to_literal;
 
     my $year = '';
     if( $pubtext =~ /(\d{4})/ ) { $year = $1 }
-    elsif( $details_ei =~ /(\d{4})/ ) { $year = $1 }
+    elsif( $details =~ /(\d{4})/ ) { $year = $1 }
 
     my $pub_id = ($doc->findnodes('//PublisherText/@publisher_id'))[0]->to_literal;
 
     my $publisher = $self->_fetch( 'publishers', 'publisher_id', $pub_id, 'details' );
     my $data = ($publisher->findnodes('//PublisherData'))[0];
 
-    return {
-        publisher   => ($data->findnodes('//Name'))[0]->to_literal,
-        location    => ($data->findnodes('//Details/@location'))[0]->to_literal,
-        year        => $year || ''
-    };
+    $book->{publisher} = ($data->findnodes('//Name'))[0]->to_literal;
+    $book->{pubdate}   = $year || '';
+
+    # deprecated
+    $book->{location}  = ($data->findnodes('//Details/@location'))[0]->to_literal;
+    $book->{year}      = $year || '';
 }
+
+#<ISBNdb server_time="2013-08-31T08:52:38Z">
+#<BookList total_results="1" page_size="10" page_number="1" shown_results="1">
+#<BookData book_id="learning_perl_a03" isbn="0596101058" isbn13="9780596101053">
+#<Title>Learning Perl</Title>
+#<TitleLong></TitleLong>
+#<AuthorsText>Randal L. Schwartz, Tom Phoenix and brian d foy</AuthorsText>
+#<PublisherText publisher_id="oreilly">Sebastopol, CA : O\'Reilly, c2005.</PublisherText>
+#<Details change_time="2009-04-23T07:13:51Z" price_time="2013-01-01T19:03:44Z" edition_info="(pbk.)" language="eng" physical_description_text="283 p. : ill. ; 24 cm." lcc_number="" dewey_decimal_normalized="5.133" dewey_decimal="005.133" />
+#</BookData>
+#</BookList>
+#</ISBNdb>
+
+sub _get_details {
+    my( $self, $book, $doc ) = @_;
+
+    my $isbn10 = $doc->findnodes('//BookData/@isbn')->to_literal;
+    my $isbn13 = $doc->findnodes('//BookData/@isbn13')->to_literal;
+
+    $book->{isbn}   = $isbn13;
+    $book->{ean13}  = $isbn13;
+    $book->{isbn13} = $isbn13;
+    $book->{isbn10} = $isbn10;
+
+    my $long_title  = eval { ($doc->findnodes('//TitleLong'))[0]->to_literal };
+    my $short_title = eval { ($doc->findnodes('//Title'))[0]->to_literal };
+    $book->{title} = $long_title || $short_title;
+
+    my $edition = $doc->findnodes('//Details/@edition_info')->to_literal;
+    my $desc    = $doc->findnodes('//Details/@physical_description_text')->to_literal;
+    my $dewey   = $doc->findnodes('//Details/@dewey_decimal')->to_literal;
+
+    my ($binding,$date) = $edition =~ /([^;]+);(.*)/;
+    my (@size)          = $desc =~ /([\d\.]+)"x([\d\.]+)"x([\d\.]+)"/;
+    my ($weight)        = $desc =~ /([\d\.]+) lbs?/;
+    my ($pages)         = $desc =~ /(\d) pages/;
+    ($pages)            = $desc =~ /(\d+) p\./ unless($pages);
+
+    my ($height,$width,$depth) = sort {$b <=> $a} @size;
+
+    $book->{height}  = $height * 10     if($height);
+    $book->{width}   = $width  * 10     if($width);
+    $book->{depth}   = $depth  * 10     if($depth);
+    $book->{weight}  = $weight * $LB2G  if($weight);
+    $book->{pubdate} = $date    if($date);
+    $book->{binding} = $editions{$edition} || $binding || $edition;
+    $book->{pages}   = $pages;
+    $book->{dewey}   = "$dewey";
+}
+
 
 sub _fetch {
     my( $self, @args ) = @_;
     my $parser = new XML::LibXML();
     my $url = $self->_url( @args );
     my $xml = $self->_fetch_data($url);
+    return  unless($xml && $xml !~ /^<!DOCTYPE html>/);
+
     my $doc = $parser->parse_string( $xml );
     return wantarray ? ( $doc, $url ) : $doc;
 }
@@ -160,15 +230,48 @@ sub _fetch_data {
     my( $self, $url ) = @_;
     my $res = $user_agent->get($url);
     return unless $res->is_success;
+#    use Data::Dumper;
+#    print STDERR "# data=" . Dumper($res);
     return $res->content;
 }
 
 sub _url {
-    my( $self, $search_type, $search_field, $search_param, $results_type ) = @_;
-    croak "no access key provided" unless $ACCESS_KEY;
-    my $url = sprintf( 'http://isbndb.com/api/%s.xml?access_key=%s&index1=%s&results=%s&value1=%s',
-    $search_type, $ACCESS_KEY, $search_field, $results_type, $search_param );
+    my $self = shift;
+
+    my $access_key = $self->_get_key();
+    croak "no access key provided" unless $access_key;
+
+    my %hash = ( access_key => $access_key );
+    ($hash{search_type}, $hash{search_field}, $hash{search_param}, $hash{results_type}) = @_;
+
+    my @values = map { $hash{$_} } @{ $api_paths{$API_VERSION}{fields} };
+    my $url = sprintf $api_paths{$API_VERSION}{format}, @values;
+
+#    print STDERR "# url=$url\n";
     return $url;
+}
+
+sub _get_key {
+    return $ACCESS_KEY  if($ACCESS_KEY);
+
+    if($ENV{ISBNDB_ACCESS_KEY}) {
+        $ACCESS_KEY = $ENV{ISBNDB_ACCESS_KEY};
+        return $ACCESS_KEY;
+    }
+
+    for my $dir ( ".", $ENV{HOME}, '~' ) {
+        my $file = join( '/', $dir, ".isbndb" );
+        next unless -e $file;
+
+        my $fh = IO::File->new($file,'r') or next;
+        my $key;
+        $key .= $_  while(<$fh>);
+        $key =~ s/\s+//gs;
+        $fh->close;
+
+        $ACCESS_KEY = $key;
+        return $ACCESS_KEY;
+    }
 }
 
 1;
@@ -184,16 +287,29 @@ __END__
 Given an ISBN, will attempt to find the details via the ISBNdb.com API. If a 
 valid result is returned, the following fields are returned via the book hash:
 
-  isbn
+  isbn          (now returns isbn13)
+  isbn10        
+  isbn13
+  ean13         (industry name)
   title
   author
+  book_link
   publisher
+  pubdate
+  binding       (if known)
+  pages         (if known)
+  weight        (if known) (in grammes)
+  width         (if known) (in millimetres)
+  height        (if known) (in millimetres)
+  depth         (if known) (in millimetres)
+
+Deprecated fields, which will be removed in a future version:
+
   location
-  year
+  year          # now pubdate
+  _source_url   # now book_link
 
-Also provides:
-
-  _source_url
+=cut
 
 =back
 
@@ -207,6 +323,13 @@ set the following, after the driver has been loaded, and before you perform a
 search.
 
   $WWW::Scraper::ISBN::ISBNdb_Driver::ACCESS_KEY = 'xxxx';
+
+You can also set the key in the ISBNDB_ACCESS_KEY environment variable.
+
+Alternatively, you can create a '.isbndb' configuration file in your home
+directory, which should only contain the key itself.
+
+Reference material for developers can be found at L<http://isbndb.com/api/v2/docs>.
 
 =head1 SEE ALSO
 

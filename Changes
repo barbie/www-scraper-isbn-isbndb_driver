@@ -1,5 +1,12 @@
 # Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 
+version: 0.05
+date: 2008-12-17
+changes:
+  - adding missing requirement, WWW::Scraper::ISBN
+  - now uses XML::LibXML instead of XML::DOM
+  - now uses WWW::Mechanize to fetch URLs (a bit heavy-handed, I know)
+
 version: 0.04
 date:    2006-07-14
 changes:

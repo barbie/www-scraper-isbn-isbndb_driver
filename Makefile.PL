@@ -9,6 +9,8 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/WWW/Scraper/ISBN/ISBNdb_Driver.pm',
     PL_FILES            => {},
     PREREQ_PM => {
+        # Business::ISBN v2.01 or greater is required for isbn-13 support
+        'WWW::Scraper::ISBN' => 0,
         'WWW::Scraper::ISBN::Driver' => 0.15,
         'XML::DOM' => 0,
         'Test::More' => 0, 

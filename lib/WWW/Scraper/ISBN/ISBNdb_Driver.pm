@@ -4,11 +4,14 @@ use base 'WWW::Scraper::ISBN::Driver';
 use strict;
 use warnings;
 
-use XML::DOM;
+use WWW::Mechanize;
+use XML::LibXML;
 use Carp;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 our $ACCESS_KEY = undef;
+
+our $mech = new WWW::Mechanize( stack_depth => 1 );
 
 =head1 NAME
 
@@ -46,19 +49,21 @@ sub search {
   $self->found(0);
   $self->book(undef);
 
-  my( $doc, $url ) = $self->_fetch( 'books', 'isbn', $isbn );
-  return undef unless $doc && $self->_contains_book_data($doc);
+  my( $details, $details_url ) = $self->_fetch( 'books', 'isbn' => $isbn, 'details' );
+  my( $authors, $authors_url ) = $self->_fetch( 'books', 'isbn' => $isbn, 'authors' );
 
-  my $pubdata = $self->_get_pubdata($doc);
+  return undef unless $details && $self->_contains_book_data($details);
+
+  my $pubdata = $self->_get_pubdata($details);
 
   my %book = (
     isbn => $isbn,
-    title => $self->_get_title($doc),
-    author => $self->_get_author($doc),
+    title => $self->_get_title($details),
+    author => $self->_get_author($details, $authors),
     publisher => $pubdata->{publisher},
     location => $pubdata->{location},
     year => $pubdata->{year},
-    _source_url => $url,
+    _source_url => $details_url,
   );
 
   $self->book(\%book);
@@ -68,48 +73,82 @@ sub search {
 
 sub _contains_book_data {
   my( $self, $doc ) = @_;
-  return $doc->getElementsByTagName('BookData')->getLength > 0;
+  return $doc->getElementsByTagName('BookData')->size > 0;
 }
 
 sub _get_title {
   my( $self, $doc ) = @_;
-  return $doc->getElementsByTagName('TitleLong')->item(0)->getChildNodes->item(0)
-    ? $doc->getElementsByTagName('TitleLong')->item(0)->getChildNodes->item(0)->toString()
-    : $doc->getElementsByTagName('Title')->item(0)->getChildNodes->item(0)->toString();
+  my $long_title = eval { ($doc->findnodes('//TitleLong'))[0]->to_literal };
+  my $short_title = eval { ($doc->findnodes('//Title'))[0]->to_literal };
+  return $long_title || $short_title;
 }
 
 sub _get_author {
-  my( $self, $doc ) = @_;
-  return $doc->getElementsByTagName('AuthorsText')->item(0)->getChildNodes->item(0)->toString();
+  my( $self, $details_doc, $authors_doc ) = @_;
+
+  my $authors = $self->_get_all_authors($authors_doc);
+  my $str = join '; ', @$authors;
+
+  $str =~ s/^\s+//;
+  $str =~ s/\s+$//;
+  return $str;
+}
+
+sub _get_all_authors {
+  my( $self, $authors ) = @_;
+  my $people = $authors->findnodes('//Authors/Person');
+  my @people;
+  for( my $i = 0; $i < $people->size; $i++ ) {
+    my $person = $people->get_node($i);
+    push @people, $person->to_literal;
+  }
+  return \@people;
 }
 
 sub _get_pubdata {
   my( $self, $doc ) = @_;
 
-  my $pubtext = $doc->getElementsByTagName('PublisherText')->item(0)->getChildNodes->item(0)->toString();
-  my $year = $1 if $pubtext =~ /(\d{4})/;
+  my $pubtext = $doc->findnodes('//PublisherText')->to_literal;
+  my $details_ei = $doc->findnodes('//Details/@edition_info')->to_literal;
 
-  my $pub_id = $doc->getElementsByTagName('PublisherText')->item(0)->getAttributes->getNamedItem('publisher_id')->getValue();
-  my $data = $self->_fetch( 'publishers', 'publisher_id', $pub_id )->getElementsByTagName('PublisherData')->item(0);
+  my $year = '';
+  if( $pubtext =~ /(\d{4})/ ) { $year = $1 }
+  elsif( $details_ei =~ /(\d{4})/ ) { $year = $1 }
+
+  my $pub_id = ($doc->findnodes('//PublisherText/@publisher_id'))[0]->to_literal;
+
+  my $publisher = $self->_fetch( 'publishers', 'publisher_id', $pub_id, 'details' );
+  my $data = ($publisher->findnodes('//PublisherData'))[0];
+
   return {
-    publisher => $data->getElementsByTagName('Name')->item(0)->getChildNodes->item(0)->toString(),
-    location => $data->getElementsByTagName('Details')->item(0)->getAttributes->getNamedItem('location')->getValue(),
+    publisher => ($data->findnodes('//Name'))[0]->to_literal,
+    location => ($data->findnodes('//Details/@location'))[0]->to_literal,
     year => $year || ''
   };
 }
 
 sub _fetch {
   my( $self, @args ) = @_;
-  my $parser = new XML::DOM::Parser();
+  my $parser = new XML::LibXML();
   my $url = $self->_url( @args );
-  my $doc = $parser->parsefile( $url );
+  my $xml = $self->_fetch_data($url);
+  my $doc = $parser->parse_string( $xml );
   return wantarray ? ( $doc, $url ) : $doc;
 }
 
+sub _fetch_data {
+  my( $self, $url ) = @_;
+  $mech->get($url);
+  return unless $mech->success;
+  return $mech->content;
+}
+
 sub _url {
-  my( $self, $search_type, $search_field, $search_param ) = @_;
+  my( $self, $search_type, $search_field, $search_param, $results_type ) = @_;
   croak "no access key provided" unless $ACCESS_KEY;
-  return sprintf 'http://isbndb.com/api/%s.xml?access_key=%s&index1=%s&results=details&value1=%s', $search_type, $ACCESS_KEY, $search_field, $search_param;
+  my $url = sprintf( 'http://isbndb.com/api/%s.xml?access_key=%s&index1=%s&results=%s&value1=%s',
+                     $search_type, $ACCESS_KEY, $search_field, $results_type, $search_param );
+  return $url;
 }
 
 =head1 SEE ALSO

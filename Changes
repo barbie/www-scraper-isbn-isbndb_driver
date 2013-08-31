@@ -1,5 +1,12 @@
 # Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 
+version: 0.03
+date:    2006-06-13
+changes:
+  - change WWW::Scraper::ISBN prereq to WWW::Scraper::ISBN::Driver (just like ISBNnu_Driver.pm)
+  - add missing XML::DOM prereq
+  - add 'description' and 'see also' sections to docs
+
 version: 0.02
 date:    2006-06-06
 changes:

@@ -7,7 +7,7 @@ use warnings;
 use XML::DOM;
 use Carp;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 our $ACCESS_KEY = undef;
 
 =head1 NAME
@@ -32,6 +32,11 @@ WWW::Scraper::ISBN::ISBNdb_Driver - isbndb.com driver for WWW::Scraper::ISBN
     print "Publisher: ", $book->{publisher}, "\n";
     print "Year: ", $book->{year}, "\n";
   }
+
+=head1 DESCRIPTION
+
+This is a WWW::Scraper::ISBN driver that pulls data from
+L<http://www.isbndb.com>. Consult L<WWW::Scraper::ISBN> for usage.
 
 =cut
 
@@ -100,6 +105,10 @@ sub _url {
   croak "no access key provided" unless $ACCESS_KEY;
   return sprintf 'http://isbndb.com/api/%s.xml?access_key=%s&index1=%s&results=details&value1=%s', $search_type, $ACCESS_KEY, $search_field, $search_param;
 }
+
+=head1 SEE ALSO
+
+L<WWW::Scraper::ISBN>
 
 =head1 AUTHOR
 

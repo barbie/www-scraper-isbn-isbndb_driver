@@ -9,7 +9,8 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/WWW/Scraper/ISBN/ISBNdb_Driver.pm',
     PL_FILES            => {},
     PREREQ_PM => {
-        'WWW::Scraper::ISBN' => 0,
+        'WWW::Scraper::ISBN::Driver' => 0.15,
+        'XML::DOM' => 0,
         'Test::More' => 0, 
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

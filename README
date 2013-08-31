@@ -1,4 +1,5 @@
-WWW::Scraper::ISBN::ISBNdb_Driver
+WWW-Scraper-ISBN-ISBNdb_Driver
+==============================
 
 This module is a WWW::Scraper::ISBN driver for isbndb.com. See
 WWW::Scraper::ISBN for usage.
@@ -35,7 +36,8 @@ You can also look for information at:
 
 COPYRIGHT AND LICENCE
 
-Copyright (c) David J. Iberri
+  Copyright (C) 2006-2013 David J. Iberri
+  Copyright (C) 2013      Barbie, barbie@cpan.org
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+  This distribution is free software; you can redistribute it and/or
+  modify it under the Artistic Licence v2.

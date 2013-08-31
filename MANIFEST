@@ -1,6 +1,7 @@
 Changes
 MANIFEST
-META.yml # Will be created by "make dist"
+META.json
+META.yml
 Makefile.PL
 README
 lib/WWW/Scraper/ISBN/ISBNdb_Driver.pm

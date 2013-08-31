@@ -1,5 +1,10 @@
 # Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 
+version: 0.04
+date:    2006-07-14
+changes:
+  - add check to ensure that we obtained book data (with thanks to Robert A. Schmeid for the patch)
+
 version: 0.03
 date:    2006-06-13
 changes:

@@ -7,7 +7,7 @@ use warnings;
 use XML::DOM;
 use Carp;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 our $ACCESS_KEY = undef;
 
 =head1 NAME
@@ -36,7 +36,8 @@ WWW::Scraper::ISBN::ISBNdb_Driver - isbndb.com driver for WWW::Scraper::ISBN
 =head1 DESCRIPTION
 
 This is a WWW::Scraper::ISBN driver that pulls data from
-L<http://www.isbndb.com>. Consult L<WWW::Scraper::ISBN> for usage.
+L<http://www.isbndb.com>. Consult L<WWW::Scraper::ISBN> for usage
+details.
 
 =cut
 
@@ -46,7 +47,7 @@ sub search {
   $self->book(undef);
 
   my( $doc, $url ) = $self->_fetch( 'books', 'isbn', $isbn );
-  return undef unless $doc;
+  return undef unless $doc && $self->_contains_book_data($doc);
 
   my $pubdata = $self->_get_pubdata($doc);
 
@@ -63,6 +64,11 @@ sub search {
   $self->book(\%book);
   $self->found(1);
   return $self->book;
+}
+
+sub _contains_book_data {
+  my( $self, $doc ) = @_;
+  return $doc->getElementsByTagName('BookData')->getLength > 0;
 }
 
 sub _get_title {

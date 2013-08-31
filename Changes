@@ -1,5 +1,13 @@
-Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
+# Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 
-0.01    2006-05-14
-        Initial release.
+version: 0.02
+date:    2006-06-06
+changes:
+  - add missing WWW::Scraper::ISBN prereq
+  - add missing t/01-isbndb.t test file
+  - yamlize Changes file
 
+version: 0.01
+date:    2006-06-03
+changes:
+  - initial release

@@ -7,7 +7,7 @@ use warnings;
 use XML::DOM;
 use Carp;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our $ACCESS_KEY = undef;
 
 =head1 NAME

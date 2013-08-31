@@ -1,10 +1,12 @@
-#!perl -T
+#!/usr/bin/perl -w
+use strict;
 
 use Test::More;
-eval "use Test::Pod::Coverage 1.04";
-plan skip_all => "Test::Pod::Coverage 1.04 required for testing POD coverage" if $@;
-all_pod_coverage_ok( { also_private => [
-  qr/
-    search
-  /x
-] } );
+
+# Skip if doing a regular install
+plan skip_all => "Author tests not required for installation"
+    unless ( $ENV{AUTOMATED_TESTING} );
+
+eval "use Test::Pod::Coverage 0.08";
+plan skip_all => "Test::Pod::Coverage 0.08 required for testing POD coverage" if $@;
+all_pod_coverage_ok();

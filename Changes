@@ -5,6 +5,7 @@ Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
         - change file dates changed to meet W3CDTF standards.
         - updated Makefile.PL.
         - added META.json and updated META.yml.
+        - extended test suite.
 
 0.07    2009-03-12
         - added missing XML::LibXML requirement in Makefile.PL

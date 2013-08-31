@@ -8,7 +8,7 @@ use LWP::UserAgent;
 use XML::LibXML;
 use Carp;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 our $ACCESS_KEY = undef;
 
 our $user_agent = new LWP::UserAgent();

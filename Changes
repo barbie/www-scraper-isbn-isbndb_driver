@@ -1,5 +1,11 @@
 # Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 
+version: 0.07
+date: 2009-03-12
+changes:
+  - added missing XML::LibXML requirement in Makefile.PL
+  - add perl license to Makefile.PL
+
 version: 0.06
 date: 2008-12-22
 changes:

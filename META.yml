@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               WWW-Scraper-ISBN-ISBNdb_Driver
-version:            0.05
+version:            0.06
 abstract:           isbndb.com driver for WWW::Scraper::ISBN
 author:
     - David J. Iberri <diberri@cpan.org>
@@ -9,6 +9,7 @@ distribution_type:  module
 configure_requires:
     ExtUtils::MakeMaker:  0
 requires:
+    LWP::UserAgent:       0
     Test::More:           0
     WWW::Scraper::ISBN:   0
     WWW::Scraper::ISBN::Driver:  0.15

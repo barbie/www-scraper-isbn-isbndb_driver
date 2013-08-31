@@ -4,14 +4,14 @@ use base 'WWW::Scraper::ISBN::Driver';
 use strict;
 use warnings;
 
-use WWW::Mechanize;
+use LWP::UserAgent;
 use XML::LibXML;
 use Carp;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 our $ACCESS_KEY = undef;
 
-our $mech = new WWW::Mechanize( stack_depth => 1 );
+our $user_agent = new LWP::UserAgent();
 
 =head1 NAME
 
@@ -138,9 +138,9 @@ sub _fetch {
 
 sub _fetch_data {
   my( $self, $url ) = @_;
-  $mech->get($url);
-  return unless $mech->success;
-  return $mech->content;
+  my $res = $user_agent->get($url);
+  return unless $res->is_success;
+  return $res->content;
 }
 
 sub _url {

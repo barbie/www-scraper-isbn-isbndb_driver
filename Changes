@@ -1,5 +1,11 @@
 # Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 
+version: 0.06
+date: 2008-12-22
+changes:
+  - noticed that WWW::Mechanize requirement was missing from Makefile.PL
+  - removed WWW::Mechanize requirement (use LWP::UserAgent instead)
+
 version: 0.05
 date: 2008-12-17
 changes:

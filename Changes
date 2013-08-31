@@ -9,6 +9,7 @@ Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
         - fixed calls to API v1.
         - extended results stored in book hash from API data.
         - enabled access to API v2.
+        - Fixed RT#48005 (thanks to Jess 'castaway' Robinson (JROBINSON)).
 
 0.07    2009-03-12
         - added missing XML::LibXML requirement in Makefile.PL

@@ -26,6 +26,7 @@ our $ACCESS_KEY = undef;
 our $user_agent = new LWP::UserAgent();
 
 my $API_VERSION = 'v1';
+my $IN2MM = 0.0393700787;   # number of inches in a millimetre (mm)
 my $LB2G  = 0.00220462;     # number of pounds (lbs) in a gram
 
 my %editions = (
@@ -165,16 +166,22 @@ sub _get_pubdata {
     if( $pubtext =~ /(\d{4})/ ) { $year = $1 }
     elsif( $details =~ /(\d{4})/ ) { $year = $1 }
 
+    $book->{pubdate}   = $year || '';
+    $book->{publisher} = '';
+
     my $pub_id = ($doc->findnodes('//PublisherText/@publisher_id'))[0]->to_literal;
 
-    my $publisher = $self->_fetch( 'publishers', 'publisher_id', $pub_id, 'details' );
-    my $data = ($publisher->findnodes('//PublisherData'))[0];
+    if($pub_id) {
+        my $publisher = $self->_fetch( 'publishers', 'publisher_id', $pub_id, 'details' );
+        my $data = ($publisher->findnodes('//PublisherData'))[0];
 
-    $book->{publisher} = ($data->findnodes('//Name'))[0]->to_literal;
-    $book->{pubdate}   = $year || '';
+        $book->{publisher} = ($data->findnodes('//Name'))[0]->to_literal;
+
+        # deprecated
+        $book->{location}  = ($data->findnodes('//Details/@location'))[0]->to_literal;
+    }
 
     # deprecated
-    $book->{location}  = ($data->findnodes('//Details/@location'))[0]->to_literal;
     $book->{year}      = $year || '';
 }
 
@@ -217,10 +224,10 @@ sub _get_details {
 
     my ($height,$width,$depth) = sort {$b <=> $a} @size;
 
-    $book->{height}  = $height * 10     if($height);
-    $book->{width}   = $width  * 10     if($width);
-    $book->{depth}   = $depth  * 10     if($depth);
-    $book->{weight}  = $weight * $LB2G  if($weight);
+    $book->{height}  = int($height / $IN2MM)    if($height);
+    $book->{width}   = int($width  / $IN2MM)    if($width);
+    $book->{depth}   = int($depth  / $IN2MM)    if($depth);
+    $book->{weight}  = int($weight / $LB2G)     if($weight);
     $book->{pubdate} = $date    if($date);
     $book->{binding} = $editions{$edition} || $binding || $edition;
     $book->{pages}   = $pages;
@@ -316,10 +323,10 @@ sub _get_details_v2 {
 
     my ($height,$width,$depth) = sort {$b <=> $a} @size;
 
-    $book->{height}  = $height * 10     if($height);
-    $book->{width}   = $width  * 10     if($width);
-    $book->{depth}   = $depth  * 10     if($depth);
-    $book->{weight}  = $weight * $LB2G  if($weight);
+    $book->{height}  = int($height / $IN2MM)    if($height);
+    $book->{width}   = int($width  / $IN2MM)    if($width);
+    $book->{depth}   = int($depth  / $IN2MM)    if($depth);
+    $book->{weight}  = int($weight / $LB2G)     if($weight);
     $book->{pubdate} = $date    if($date);
     $book->{binding} = $editions{$edition} || $binding || $edition;
     $book->{pages}   = $pages;

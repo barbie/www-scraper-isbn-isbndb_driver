@@ -12,7 +12,7 @@ my $access_key = WWW::Scraper::ISBN::ISBNdb_Driver::_get_key();
 #my $apiversion = WWW::Scraper::ISBN::ISBNdb_Driver::_set_version('v1');
 
 if( $access_key ) {
-  plan tests => 78;
+  plan tests => 95;
 } else {
   plan skip_all => 'no isbndb.com access key provided';
 }
@@ -37,10 +37,10 @@ my %tests = (
         [ 'is',     'dewey',        '005'                           ],
         [ 'is',     'binding',      'Paperback'                     ],
         [ 'is',     'pages',        4                               ],
-        [ 'is',     'width',        70                              ],
-        [ 'is',     'height',       92                              ],
-        [ 'is',     'depth',        9                               ],
-        [ 'is',     'weight',       0.002866006                     ],
+        [ 'is',     'width',        177                             ],
+        [ 'is',     'height',       233                             ],
+        [ 'is',     'depth',        22                              ],
+        [ 'is',     'weight',       589                             ],
         [ 'is',     'description',  undef                           ],
         [ 'like',   'book_link',    qr!http://isbndb.com/api/books.xml\?access_key=[a-zA-Z0-9]+&index1=isbn&results=details&value1=9781600330209! ]
     ],
@@ -100,6 +100,23 @@ my %tests = (
         [ 'is',     'weight',       undef                           ],
         [ 'is',     'description',  undef                           ],  # not API v1
         [ 'like',   'book_link',    qr!http://isbndb.com/api/books.xml\?access_key=[a-zA-Z0-9]+&index1=isbn&results=details&value1=0070480745! ]
+    ],
+    '9780141021621' => [    # missing publisher data - see RT#48005
+        [ 'is',     'isbn10',       '0141021624'                    ],
+        [ 'is',     'isbn13',       '9780141021621'                 ],
+        [ 'is',     'author',       ''                              ],
+        [ 'like',   'title',        qr!Skeleton Coast \(Oregon Files 4\)! ],
+        [ 'is',     'publisher',    ''                              ],
+        [ 'is',     'pubdate',      ''                              ],
+        [ 'is',     'dewey',        ''                              ],
+        [ 'is',     'binding',      'Paperback'                     ],
+        [ 'is',     'pages',        6                               ],
+        [ 'is',     'width',        111                             ],
+        [ 'is',     'height',       182                             ],
+        [ 'is',     'depth',        40                              ],
+        [ 'is',     'weight',       317                             ],
+        [ 'is',     'description',  undef                           ],  # not API v1
+        [ 'like',   'book_link',    qr!http://isbndb.com/api/books.xml\?access_key=[a-zA-Z0-9]+&index1=isbn&results=details&value1=9780141021621! ]
     ],
 );
 

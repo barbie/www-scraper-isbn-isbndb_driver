@@ -37,7 +37,7 @@ my %tests = (
         [ 'like',   'pubdate',      qr/2005-07-01$/                 ],
         [ 'is',     'dewey',        '005'                           ],
         [ 'is',     'binding',      'Paperback'                     ],
-        [ 'is',     'pages',        4                               ],
+        [ 'is',     'pages',        704                             ],
         [ 'is',     'width',        177                             ],
         [ 'is',     'height',       233                             ],
         [ 'is',     'depth',        22                              ],

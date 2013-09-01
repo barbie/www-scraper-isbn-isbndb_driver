@@ -110,6 +110,8 @@ sub search {
         $self->_get_details_v2(\%book,$details);
     }
 
+    $self->_trim(\%book);
+
     $self->book(\%book);
     $self->found(1);
     return $self->book;
@@ -315,7 +317,7 @@ sub _get_details_v2 {
     my ($binding,$date) = $edition =~ /([^;]+);(.*)/;
     my (@size)          = $desc =~ /([\d\.]+)"x([\d\.]+)"x([\d\.]+)"/;
     my ($weight)        = $desc =~ /([\d\.]+) lbs?/;
-    my ($pages)         = $desc =~ /(\d) pages/;
+    my ($pages)         = $desc =~ /(\d+) pages/;
     ($pages)            = $desc =~ /(\d+) p\./ unless($pages);
 
     if( !$date && $pubtext =~ /(\d{4})/ ) { $date = $1 }
@@ -335,7 +337,17 @@ sub _get_details_v2 {
     $book->{description} = $summary;
 }
 
+#--------------------------------------------------------------------------
 
+sub _trim {
+    my( $self, $book ) = @_;
+
+    for my $key (keys %$book) {
+        next unless($book->{$key});
+        $book->{$key} =~ s/^\s+//s;  # remove leading spaces
+        $book->{$key} =~ s/\s+$//s;  # remove trailing spaces
+    }
+}
 
 sub _fetch {
     my( $self, @args ) = @_;
@@ -430,6 +442,7 @@ valid result is returned, the following fields are returned via the book hash:
   width         (if known) (in millimetres)
   height        (if known) (in millimetres)
   depth         (if known) (in millimetres)
+  description   (if known)
 
 Deprecated fields, which will be removed in a future version:
 

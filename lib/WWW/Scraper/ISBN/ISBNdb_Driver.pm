@@ -3,7 +3,7 @@ package WWW::Scraper::ISBN::ISBNdb_Driver;
 use strict;
 use warnings;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 #--------------------------------------------------------------------------
 

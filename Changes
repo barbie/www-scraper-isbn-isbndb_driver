@@ -1,6 +1,7 @@
 Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 ===================================================
 
+0.08    2013-09-01
         - New Maintainer: Barbie.
         - change file dates changed to meet W3CDTF standards.
         - updated Makefile.PL.
@@ -10,6 +11,7 @@ Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
         - extended results stored in book hash from API data.
         - enabled access to API v2.
         - Fixed RT#48005 (thanks to Jess 'castaway' Robinson (JROBINSON)).
+        - added trim function.
 
 0.07    2009-03-12
         - added missing XML::LibXML requirement in Makefile.PL

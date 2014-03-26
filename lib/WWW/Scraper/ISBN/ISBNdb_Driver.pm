@@ -3,7 +3,7 @@ package WWW::Scraper::ISBN::ISBNdb_Driver;
 use strict;
 use warnings;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 #--------------------------------------------------------------------------
 
@@ -520,7 +520,7 @@ L<http://search.cpan.org/dist/WWW-Scraper-ISBN-ISBNdb_Driver>
 =head1 COPYRIGHT AND LICENSE
 
   Copyright 2004-2013 by David J. Iberri
-  Copyright 2013 by Barbie
+  Copyright 2013-2014 by Barbie
 
   This distribution is free software; you can redistribute it and/or
   modify it under the Artistic Licence v2.

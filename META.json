@@ -1,6 +1,6 @@
 {
     "name": "WWW-Scraper-ISBN-ISBNdb_Driver",
-    "version": "0.08",
+    "version": "0.09",
     "abstract": "Search driver for the isbndb.com online book catalog",
     "author": [
       "David J. Iberri <diberri@cpan.org>",
@@ -48,7 +48,7 @@
     "provides": {
         "WWW::Scraper::ISBN::ISBNdb_Driver": {
             "file": "lib/WWW/Scraper/ISBN/ISBNdb_Driver.pm",
-            "version": "0.08"
+            "version": "0.09"
         }
     },
     "no_index": {

@@ -90,9 +90,6 @@ sub search {
 
         %book = (
             book_link   => $details_url,
-
-            # deprecated
-            _source_url => $details_url
         );
 
         $self->_get_pubdata(\%book,$details);
@@ -178,13 +175,7 @@ sub _get_pubdata {
         my $data = ($publisher->findnodes('//PublisherData'))[0];
 
         $book->{publisher} = ($data->findnodes('//Name'))[0]->to_literal;
-
-        # deprecated
-        $book->{location}  = ($data->findnodes('//Details/@location'))[0]->to_literal;
     }
-
-    # deprecated
-    $book->{year}      = $year || '';
 }
 
 #<ISBNdb server_time="2013-08-31T08:52:38Z">
@@ -433,6 +424,7 @@ valid result is returned, the following fields are returned via the book hash:
   ean13         (industry name)
   title
   author
+  dewey
   book_link
   publisher
   pubdate
@@ -444,7 +436,7 @@ valid result is returned, the following fields are returned via the book hash:
   depth         (if known) (in millimetres)
   description   (if known)
 
-Deprecated fields, which will be removed in a future version:
+The following fields have now been deprecated:
 
   location
   year          # now pubdate
@@ -515,7 +507,7 @@ L<http://search.cpan.org/dist/WWW-Scraper-ISBN-ISBNdb_Driver>
 =head1 AUTHOR
 
   2006-2013 David J. Iberri, C<< <diberri at cpan.org> >>
-  2013      Barbie, E<lt>barbie@cpan.orgE<gt>
+  2013-2014 Barbie, E<lt>barbie@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

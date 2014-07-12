@@ -15,6 +15,7 @@ use base qw(WWW::Scraper::ISBN::Driver);
 ###########################################################################
 # Modules
 
+use IO::File;
 use LWP::UserAgent;
 use XML::LibXML;
 use Carp;

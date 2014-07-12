@@ -7,7 +7,7 @@ use 5.006;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME                => 'WWW::Scraper::ISBN::ISBNdb_Driver',
+    NAME                => 'WWW-Scraper-ISBN-ISBNdb_Driver',
     AUTHOR              => 'Barbie <barbie@cpan.org>',
     VERSION_FROM        => 'lib/WWW/Scraper/ISBN/ISBNdb_Driver.pm',
     ABSTRACT            => 'Search driver for the isbndb.com online book catalog',

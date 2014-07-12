@@ -1,6 +1,8 @@
 Revision history for WWW-Scraper-ISBN-ISBNdb_Driver
 ===================================================
 
+        - fixed distribution name in META.
+
 0.09    2014-03-26
         - added standalone LICENSE file.
 

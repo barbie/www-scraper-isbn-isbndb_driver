@@ -19,8 +19,8 @@ WriteMakefile(
         # Business::ISBN v2.01 or greater is required for isbn-13 support
         'IO::File'                      => '0',
         'LWP::UserAgent'                => '0',
-        'WWW::Scraper::ISBN'            => '0',
-        'WWW::Scraper::ISBN::Driver'    => '0.15',
+        'WWW::Scraper::ISBN'            => '1.00',
+        'WWW::Scraper::ISBN::Driver'    => '1.00',
         'XML::DOM'                      => '0',
         'XML::LibXML'                   => '0',
         

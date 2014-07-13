@@ -25,6 +25,7 @@ WriteMakefile(
         'XML::LibXML'                   => '0',
         
         # build/test prereqs
+        'Data::Dumper'                  => '0',
         'Test::More'                    => '0.70'
 
     },

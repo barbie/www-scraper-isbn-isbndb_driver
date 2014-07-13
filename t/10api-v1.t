@@ -133,12 +133,26 @@ SKIP: {
 
 	$scraper->drivers($DRIVER);
 
-    my $res = $scraper->search( '0-07-048074-5' );
-    is($res->found,0);
+    my $isbn = '0-07-048074-5';
+    my $record;
 
-    for my $isbn (keys %tests) {
-        my $record = $scraper->search($isbn);
-        my $error  = $record->error || '';
+    eval { $record = $scraper->search($isbn); };
+    if($record && $record->found) {
+        ok(0,'Unexpectedly found a non-existent book');
+    } elsif($record) {
+        like($record->error,qr/Invalid ISBN specified/);
+    } else {
+        like($@,qr/Invalid ISBN specified/);
+    }
+
+    for $isbn (keys %tests) {
+        eval { $record = $scraper->search($isbn) };
+        my $error = $@ || $record->error || '';
+
+        unless($record && $record->found) {
+            diag("Failed to create record: $error");
+            next;
+        }
 
         SKIP: {
             skip "Website unavailable", scalar(@{ $tests{$isbn} }) + 2   
